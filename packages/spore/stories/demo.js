@@ -869,3 +869,43 @@ export const withChangingLayout = () => {
     </FullScreen>
   );
 };
+
+/**
+ * Force layout.
+ */
+export const withForceLayoutIssue = () => {
+  const [resizeListener, size] = useResizeAware();
+  const { width, height } = size;
+  const grid = useGrid({ width, height });
+
+  const [layout] = useState(() => new ForceLayout());
+  const [selected, setSelected] = useState();
+  const [drag] = useState(() => createSimulationDrag(layout.simulation));
+  useEffect(() => {
+    drag.on('click', ({ source: selected }) => {
+      setSelected(selected);
+      console.log(selected);
+    });
+  }, [drag]);
+
+  const [data, setData] = useState({ nodes: [{ id: 'node1', title: 'node1' }], links: [] });
+  button('Mutate', () => {
+    setData({ nodes: [{ id: 'node1', title: 'node1' }], links: [] });
+  });
+
+  return (
+    <FullScreen>
+      {resizeListener}
+      <SVG width={width} height={height}>
+        <Grid grid={grid} />
+        <Graph
+          grid={grid}
+          data={data}
+          selected={selected}
+          layout={layout}
+          drag={drag}
+        />
+      </SVG>
+    </FullScreen>
+  );
+};
