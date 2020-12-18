@@ -6,6 +6,8 @@ import * as d3 from 'd3';
 
 import { Projector } from './projector';
 
+// TODO(burdon): Change to Layout?
+
 /**
  * @param x angle
  * @param y depth

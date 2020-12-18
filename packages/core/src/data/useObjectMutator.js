@@ -18,8 +18,8 @@ import { useRef, useState } from 'react';
 export const useObjectMutator = (initalValue = {}) => {
   const [data, setData] = useState(initalValue);
   const ref = useRef(data);
-  return [
 
+  return [
     // Get data state (snapshot).
     data,
 

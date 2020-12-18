@@ -18,7 +18,7 @@ export default {
  */
 export const use3D = ({ distance = 1000 }) => {
   const graph = useRef();
-  const [data] = useState(() => createGraph(faker.random.number(64), faker.random.number(64)));
+  const [data] = useState(() => createGraph({ nodes: faker.random.number(64), links: faker.random.number(64) }));
 
   // Rotation.
   useEffect(() => {

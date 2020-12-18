@@ -20,6 +20,7 @@ export class TreeLayout extends Layout {
     const hierarchy = tree(d3.hierarchy(data, d => d.children));
     const { height } = hierarchy;
 
+    // TODO(burdon): Call _setData
     Object.assign(this.data, {
       descendants: hierarchy.descendants.bind(hierarchy),
       guides: [...new Array(height)].map((ignore, i) => ({

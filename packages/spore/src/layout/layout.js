@@ -69,9 +69,10 @@ export class Layout extends EventEmitter {
     };
 
     // TODO(burdon): Missing node after removed.
+    const { nodes = [], links = [] } = data;
     Object.assign(this.data, {
-      nodes: data.nodes,
-      links: data.links.map(({ id, source, target }) => {
+      nodes,
+      links: links.map(({ id, source, target }) => {
         return {
           id,
           source: find(source),

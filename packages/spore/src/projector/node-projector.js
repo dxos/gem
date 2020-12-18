@@ -94,7 +94,7 @@ export class NodeProjector extends Projector {
     const update = group => {
       const marginRight = 8;
       const defaultRadius = 8;
-      const nodeRadius = d =>
+      const nodeRadius = d => d.radius ||
         propertyAdapter(d)?.radius || get(d, 'layout.node.radius', get(this._options, 'node.radius', defaultRadius));
 
       group

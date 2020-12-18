@@ -17,17 +17,30 @@ export const seed = seed => faker.seed(seed);
 /**
  * @param array
  * @returns {*}
+ * @deprecated
  */
-export const pick = array => array[faker.random.number({ min: 0, max: array.length - 1 })];
+export const pick = array => faker.random.arrayElement(array);
+
+const types = {
+  word: () => faker.lorem.words(3).replace(/ /g, '-'),
+  name: () => faker.name.findName(),
+  company: () => faker.company.companyName(),
+  city: () => faker.address.city(),
+  product: () => faker.commerce.department()
+};
 
 /**
  *
  * @returns {{id: string, title: string}}
  */
-export const createItem = () => ({
-  id: faker.random.uuid(),
-  title: faker.lorem.words(3).replace(/ /g, '-')
-});
+export const createItem = () => {
+  const type = pick(Object.keys(types));
+  return {
+    id: faker.random.uuid(),
+    type,
+    title: types[type]()
+  };
+};
 
 /**
  *
@@ -97,11 +110,9 @@ export const convertTreeToGraph = root => {
 
 /**
  *
- * @param numNodes
- * @param numLinks
  * @returns {{nodes: {id: string, title: string}[], links: any[]}}
  */
-export const createGraph = (numNodes = 0, numLinks = 0) => {
+export const createGraph = ({ nodes: numNodes = 8, links: numLinks = 0 }) => {
   const nodes = createItems(numNodes);
 
   const links = new Map();

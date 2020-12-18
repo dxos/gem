@@ -91,7 +91,7 @@ export const withBoxProjector = () => {
   const { width, height } = size;
   const grid = useGrid({ width, height, zoom: 1 });
 
-  const [data] = useDataButton(() => createGraph(faker.random.number(32), 8));
+  const [data] = useDataButton(() => createGraph({ nodes: faker.random.number(32), links: 8 }));
 
   const nodes = useRef();
   const layout = new GridLayout();
@@ -120,7 +120,7 @@ export const withGridLayout = () => {
   const { width, height } = size;
   const grid = useGrid({ width, height, zoom: 1 });
 
-  const [data] = useDataButton(() => createGraph(faker.random.number(32), 8));
+  const [data] = useDataButton(() => createGraph({ nodes: faker.random.number(32), links: 8 }));
 
   const layout = new GridLayout();
 
@@ -261,7 +261,7 @@ export const withArrows = () => {
   );
 };
 
-const nodeColors = ['red', 'green', 'blue'];
+const nodeColors = ['grey', 'red', 'green', 'blue', 'orange'];
 const useCustomStyles = makeStyles(() => ({
   nodes: nodeColors.reduce((map, color) => {
     map[`& g.node.${color} circle`] = {
@@ -308,9 +308,15 @@ export const withCustomNodes = () => {
       node: {
         showLabels: true,
         propertyAdapter: (node) => {
-          const i = Number('0x' + node.id.slice(0, 4)) % nodeColors.length;
+          const color = {
+            name: 'red',
+            company: 'blue',
+            city: 'green',
+            product: 'orange'
+          };
+
           return {
-            class: nodeColors[i],
+            class: color[node.type] || 'grey',
             radius: node.children?.length > 2 ? 20 : 10
           };
         }
@@ -318,11 +324,24 @@ export const withCustomNodes = () => {
     })
   });
 
+  button('Link', () => {
+    const source = faker.random.arrayElement(data.nodes);
+    const target = faker.random.arrayElement(data.nodes);
+    if (source !== target) {
+      const link = createLink(source, target);
+      updateData({
+        links: {
+          $push: [link]
+        }
+      });
+    }
+  });
+
   return (
     <FullScreen>
       {resizeListener}
       <SVG width={width} height={height}>
-        <Grid grid={grid} />
+        <Grid grid={grid} showGrid={false} />
 
         <GraphLinker
           grid={grid}
@@ -743,7 +762,7 @@ export const withMultipleLayouts = () => {
 export const withRandomLayout = () => {
   const classes = useGraphStyles();
   const [resizeListener, size] = useResizeAware();
-  const [data, setData, getData, updateData] = useObjectMutator(createGraph(16));
+  const [data, setData, getData, updateData] = useObjectMutator(createGraph({ nodes: 16 }));
   const nodes = useRef();
   const snap = boolean('Snap', true);
 

@@ -18,7 +18,7 @@ import { isNull } from '../util';
  * @param {Object|undefined} svgRef
  */
 // eslint-disable-next-line react/display-name
-const SVG = forwardRef(({ children, width, height, center=true }, svg) => {
+const SVG = forwardRef(({ children, width, height, center = true }, svg) => {
   svg = svg || useRef();
 
   useEffect(() => {
@@ -33,10 +33,16 @@ const SVG = forwardRef(({ children, width, height, center=true }, svg) => {
         .attr('viewBox', `${-width / 2},${-height / 2},${width + 1},${height + 1}`);
     }
 
-  }, [svg, width, height]);
+  }, [svg, center, width, height]);
+
+  const viewBox = `${-width / 2},${-height / 2},${width + 1},${height + 1}`;
 
   return (
-    <svg ref={svg} style={{ width, height }}>
+    <svg
+      ref={svg}
+      style={{ width, height }}
+      viewBox={viewBox}
+    >
       {children}
     </svg>
   );
