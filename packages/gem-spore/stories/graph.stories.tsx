@@ -53,6 +53,29 @@ debug.enable('dxos:spore:*');
 export const Primary = () => {
   const [resizeListener, size] = useResizeAware();
   const grid = useGrid(size);
+  const [layout] = useState(() => new ForceLayout({ force: { links: { distance: 80 } } }));
+  const [data] = useDataButton(() => convertTreeToGraph(createTree({ minDepth: 1, maxDepth: 3 })));
+
+  return (
+    <FullScreen>
+      {resizeListener}
+      <SVG width={size.width} height={size.height}>
+        <Graph
+          grid={grid}
+          data={data}
+          layout={layout}
+        />
+      </SVG>
+    </FullScreen>
+  );
+};
+
+/**
+ * Graph.
+ */
+export const Simple = () => {
+  const [resizeListener, size] = useResizeAware();
+  const grid = useGrid(size);
   const [data,,, updateData] = useDataButton(() => convertTreeToGraph(createTree({ minDepth: 1, maxDepth: 3 })));
   const [layout] = useState(() => new ForceLayout({ force: { links: { distance: 80 } } }));
   const [drag] = useState(() => createSimulationDrag(layout.simulation, { link: 'metaKey', freeze: 'shiftKey' }));

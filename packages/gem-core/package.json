@@ -38,6 +38,7 @@
   "dependencies": {
     "@material-ui/core": "^4.9.10",
     "@types/d3": "^6.3.0",
+    "@types/jest": "^26.0.23",
     "clsx": "^1.1.0",
     "d3": "^6.1.1",
     "debug": "^4.1.1",
