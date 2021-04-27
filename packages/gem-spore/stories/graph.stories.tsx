@@ -354,23 +354,32 @@ export const CustomNodes = () => {
 
 /**
  * Force layout with cloned data.
+ * Checks that new nodes with the same IDs are merged with existing nodes.
  */
 export const ClonedData = () => {
   const [resizeListener, size] = useResizeAware();
   const grid = useGrid(size);
 
-  const generate = () => {
-    seed(123); // Same seed:
-    return convertTreeToGraph(createTree({ minDepth: 1, maxDepth: 3 }));
+  const generate = (count) => {
+    seed(1234); // Same seed.
+    const data = convertTreeToGraph(createTree({ minDepth: 2, maxDepth: 8 }));
+    if (count > 0) {
+      // Cut up to three links.
+      data.links.splice(0, data.links.length - Math.max(0, data.links.length - 5));
+    }
+
+    console.log(data);
+
+    return data;
   };
 
   // TODO(burdon): Show Labels updating in real time.
   const [layout] = useState(new ForceLayout());
-  const [data, setData] = useState(generate);
+  const [{ data, count }, setData] = useState(() => ({ count: 0, data: generate(0) }));
   useEffect(() => {
     const t = setTimeout(() => {
-      log('Updating...');
-      setData(generate());
+      log('Updating...', count);
+      setData({ count: count + 1, data: generate(count + 1) });
     }, 2000);
 
     return () => clearTimeout(t);
