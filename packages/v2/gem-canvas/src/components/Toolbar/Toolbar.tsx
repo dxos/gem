@@ -24,8 +24,11 @@ export const Palette = ({ onSelect }: PaletteProps) => {
   const styles = [undefined, ...styleNames];
 
   return (
-    <div style={{ width: 2 + (styles.length * 22) + ((styles.length - 1) * 4), height: 24 }}>
-      <svg className={canvasStyles}>
+    <div>
+      <svg
+        className={canvasStyles}
+        style={{ width: 2 + (styles.length * 22) + ((styles.length - 1) * 4), height: 24 }}
+      >
         {styles.map((style, i) => (
           <g
             key={i}
