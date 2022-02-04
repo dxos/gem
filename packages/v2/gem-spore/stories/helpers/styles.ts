@@ -24,9 +24,35 @@ export const styles = {
     marker {
       path.arrow {
         stroke: orange;
-        stroke-width: 1;
+        stroke-width: 1px;
         fill: none;
       }
+      circle.dot {
+        stroke: orange;
+        stroke-width: 2px;
+        fill: #FFF;
+      }
+    }
+  `,
+
+  linker: css`
+    .linker {
+      path {
+        stroke: orange;
+        stroke-dasharray: 10, 5;
+      }
+    }
+  `,
+
+  grid: css`
+    path.axis {
+      stroke: #BBB;
+    }
+    path.major {
+      stroke: #F0F0F0;
+    }
+    path.minor {
+      stroke: #F5F5F5;
     }
   `,
 

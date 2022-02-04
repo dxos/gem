@@ -4,7 +4,7 @@
 
 import * as d3 from 'd3';
 
-import { GraphLayout, GraphNode } from '../graph';
+import { GraphLayout, GraphLink, GraphNode } from '../graph';
 import { Projector } from '../scene';
 
 const value = <T extends any> (v: T | boolean): T => typeof v === 'boolean' ? undefined : v;
@@ -25,7 +25,6 @@ type LinkOptions = {
 }
 
 type GraphForceProjectorOptions = {
-  drag: boolean
   guides: boolean
   forces?: {
     manyBody?: boolean | ManyBodyOptions
@@ -40,15 +39,16 @@ type GraphForceProjectorOptions = {
  */
 export class GraphForceProjector<MODEL> extends Projector<MODEL, GraphLayout, GraphForceProjectorOptions> {
   // https://github.com/d3/d3-force
-  _simulation = d3.forceSimulation();
-
-  // Force-specific drag handler.
-  _drag = this.options.drag ? createSimulationDrag(this._simulation) : undefined;
+  _simulation = d3.forceSimulation<GraphNode<any>, GraphLink>();
 
   // Current layout.
   _layout: GraphLayout
 
   numChildren = (node) => this._layout.graph.links.filter(link => link.source.id === node.id).length;
+
+  get simulation () {
+    return this._simulation;
+  }
 
   protected getLayout () {
     return this._layout;
@@ -116,7 +116,7 @@ export class GraphForceProjector<MODEL> extends Projector<MODEL, GraphLayout, Gr
 
     this._simulation
       .on('tick', () => {
-        this.updated.emit({ layout: this._layout, options: { drag: this._drag } });
+        this.updated.emit({ layout: this._layout });
       })
       .on('end', () => {
         console.log('done');
@@ -173,38 +173,3 @@ export class GraphForceProjector<MODEL> extends Projector<MODEL, GraphLayout, Gr
       .restart();
   }
 }
-
-/**
- * @param simulation
- */
-export const createSimulationDrag = (simulation) => {
-  let dragging = false;
-
-  return d3.drag()
-    .on('start', function () {
-      dragging = false;
-    })
-
-    .on('drag', function (event) {
-      event.subject.fx = event.x;
-      event.subject.fy = event.y;
-
-      if (dragging) {
-        // High alpha forces a quick update.
-        simulation.alphaTarget(0).alpha(1).restart();
-      }
-
-      dragging = true;
-    })
-
-    .on('end', function (event) {
-      const { sourceEvent: { shiftKey } } = event;
-
-      if (!shiftKey) {
-        event.subject.fx = undefined;
-        event.subject.fy = undefined;
-      }
-
-      dragging = false;
-    });
-};

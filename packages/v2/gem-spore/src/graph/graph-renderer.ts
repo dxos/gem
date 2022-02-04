@@ -5,7 +5,9 @@
 import * as d3 from 'd3';
 import clsx from 'clsx';
 
-import { RenderOptions, Renderer } from '../scene';
+import { D3Callable, Point } from '@dxos/gem-core';
+
+import { Renderer } from '../scene';
 import { trigger } from './bullets';
 import { Graph, GraphLink, GraphNode } from './defs';
 import { getCircumferencePoints } from './util';
@@ -24,6 +26,7 @@ export type GraphLayout = {
 }
 
 export type GraphRendererOptions = {
+  drag?: D3Callable
   label?: (node: GraphNode<any>) => string
   bullets?: boolean
   arrows?: {
@@ -38,10 +41,34 @@ export type GraphRendererOptions = {
  * Renders the Graph layout.
  */
 export class GraphRenderer extends Renderer<GraphLayout, GraphRendererOptions> {
-  update (layout: GraphLayout, options: RenderOptions = {}) {
-    const { graph, guides } = layout || {};
-    const { drag } = options;
 
+  // TODO(burdon): Factor out?
+  updateLink (source?: GraphNode<any>, target?: GraphNode<any>, point?: Point) {
+    const root = d3.select(this.root);
+
+    root.selectAll('g.linker')
+      .data([{ id: 'linker' }])
+      .join('g')
+      .attr('class', 'linker')
+
+      .selectAll<SVGPathElement, any>('path')
+      .data(source ? [{ id: 'link' }] : [])
+      .join('path')
+      .attr('marker-end', () => target ? 'url(#marker-arrow-end)' : 'url(#marker-dot)')
+      .attr('d', d => {
+        return line(
+          getCircumferencePoints(
+            [source.x, source.y],
+            target ? [target.x, target.y] : point,
+            source.r,
+            target ? target.r : 1
+          )
+        );
+      });
+  }
+
+  update (layout: GraphLayout) {
+    const { graph, guides } = layout || {};
     const root = d3.select(this.root);
 
     //
@@ -113,8 +140,8 @@ export class GraphRenderer extends Renderer<GraphLayout, GraphRendererOptions> {
           const g = enter.append('g');
 
           const circle = g.append('circle');
-          if (drag) {
-            circle.call(drag);
+          if (this.options.drag) {
+            circle.call(this.options.drag);
           }
 
           if (this.options.label) {

@@ -78,12 +78,6 @@ export const updateModel = (model: TestModel) => {
   });
 };
 
-export const statsMapper = (model: TestModel): Stats => {
-  return {
-    nodes: model.items.length
-  };
-};
-
 // TODO(burdon): Generalize based on paths/filter.
 export const graphMapper = (model: TestModel, layout: GraphLayout): GraphLayout => {
   const updated: GraphLayout = {

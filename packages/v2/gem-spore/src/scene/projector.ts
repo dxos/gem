@@ -4,14 +4,12 @@
 
 import { EventEmitter, SvgContext } from '@dxos/gem-core';
 
-import { RenderOptions } from './renderer';
-
 /**
  * Generates a layout to be rendered.
  */
 // TODO(burdon): Rename Layout?
 export abstract class Projector<MODEL, LAYOUT, OPTIONS> {
-  public readonly updated = new EventEmitter<{ layout: LAYOUT, options?: RenderOptions }>();
+  public readonly updated = new EventEmitter<{ layout: LAYOUT }>();
 
   constructor (
     private readonly _context: SvgContext,
