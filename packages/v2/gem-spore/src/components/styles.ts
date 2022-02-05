@@ -4,6 +4,22 @@
 
 import { css } from '@emotion/css';
 
+export const defaultMarkerStyles = css`
+  marker {
+    &.arrow path {
+      stroke: orange;
+      stroke-width: 1px;
+      fill: none;
+    }
+
+    &.dot circle {
+      stroke: orange;
+      stroke-width: 1px;
+      fill: none;
+    }
+  }
+`;
+
 export const defaultGraphStyles = css`
   .guides {
     circle {
@@ -33,7 +49,8 @@ export const defaultGraphStyles = css`
       fill: #F5F5F5;
     }
     text {
-      fill: #666
+      fill: #666;
+      font-family: sans-serif;
     }
   }
 

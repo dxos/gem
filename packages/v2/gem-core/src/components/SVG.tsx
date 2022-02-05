@@ -4,7 +4,7 @@
 
 import React, { ReactNode } from 'react';
 
-import { useSvgContext } from '@dxos/gem-core';
+import { useSvgContext } from '../hooks';
 
 export interface SVGProps {
   children?: ReactNode | ReactNode[];
@@ -20,7 +20,10 @@ export const SVG = ({
 }: SVGProps) => {
   const context = useSvgContext();
   return (
-    <svg ref={context.ref}>
+    <svg
+      xmlns='http://www.w3.org/2000/svg'
+      ref={context.ref}
+    >
       {children}
     </svg>
   );

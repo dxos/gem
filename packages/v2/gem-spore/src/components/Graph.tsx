@@ -13,6 +13,8 @@ export interface GraphProps {
   model?: GraphModel<any>
   className?: string
   drag?: boolean
+  arrows?: boolean
+  label?: (node: GraphNode<any>) => string
   nodeClass?: (node: GraphNode<any>) => string
   onSelect?: (node: any) => void
 }
@@ -22,6 +24,8 @@ export interface GraphProps {
  * @param model
  * @param className
  * @param drag
+ * @param arrows
+ * @param label
  * @param nodeClass
  * @param onSelect
  * @constructor
@@ -30,6 +34,8 @@ export const Graph = ({
   model,
   className = defaultGraphStyles,
   drag,
+  arrows,
+  label,
   nodeClass,
   onSelect
 }: GraphProps) => {
@@ -40,6 +46,10 @@ export const Graph = ({
     const projector = new GraphForceProjector(context);
     const renderer = new GraphRenderer(context, graphRef, {
       drag: drag ? createSimulationDrag(context, projector.simulation) : undefined,
+      arrows: {
+        end: arrows
+      },
+      label,
       nodeClass,
       onNodeClick: (node: GraphNode<any>) => onSelect(node)
     });

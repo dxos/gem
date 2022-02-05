@@ -4,19 +4,19 @@
 
 import { RefObject } from 'react';
 
-import { SvgContext } from '@dxos/gem-core';
+import { SVGContext } from '@dxos/gem-core';
 
 /**
  * Base class for renderes that draw layouts.
  */
 export abstract class Renderer<LAYOUT, OPTIONS> {
   constructor (
-    protected readonly _context: SvgContext,
+    protected readonly _context: SVGContext,
     protected readonly _ref: RefObject<SVGGElement>,
     protected readonly _options?: OPTIONS
   ) {}
 
-  get context (): SvgContext {
+  get context (): SVGContext {
     return this._context;
   }
 

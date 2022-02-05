@@ -94,7 +94,7 @@ export class GraphForceProjector<T> extends Projector<GraphData<T>, GraphLayout<
         {
           cx: 0,
           cy: 0,
-          r: this.context.scale.model.toValue([2, 1])
+          r: this.context.scale.model.toValue([10, 1])
         }
       ]
     } : undefined;

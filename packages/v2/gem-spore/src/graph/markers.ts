@@ -3,24 +3,8 @@
 //
 
 import * as d3 from 'd3';
-import { css } from '@emotion/css';
 
 import { D3Callable } from '@dxos/gem-core';
-
-export const defaultMarkerStyles = css`
-  marker {
-    &.arrow path {
-      stroke: #111;
-      stroke-width: 1px;
-      fill: none;
-    }
-    &.dot circle {
-      stroke: #111;
-      stroke-width: 1px;
-      fill: none;
-    }
-  }
-`;
 
 export type MarkerOptions = {
   arrowSize?: number

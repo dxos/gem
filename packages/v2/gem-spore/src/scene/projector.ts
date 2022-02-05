@@ -2,7 +2,7 @@
 // Copyright 2021 DXOS.org
 //
 
-import { EventEmitter, SvgContext } from '@dxos/gem-core';
+import { EventEmitter, SVGContext } from '@dxos/gem-core';
 
 /**
  * Generates a layout to be rendered.
@@ -11,11 +11,11 @@ export abstract class Projector<DATA, LAYOUT, OPTIONS> {
   public readonly updated = new EventEmitter<{ layout: LAYOUT }>();
 
   constructor (
-    private readonly _context: SvgContext,
+    private readonly _context: SVGContext,
     private readonly _options?: OPTIONS
   ) {}
 
-  get context (): SvgContext {
+  get context (): SVGContext {
     return this._context;
   }
 

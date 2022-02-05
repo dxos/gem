@@ -27,11 +27,11 @@ export type GraphLayout<T> = {
 
 export type GraphRendererOptions<T> = {
   drag?: D3Callable
-  label?: (node: GraphNode<T>) => string
   arrows?: {
     start?: boolean
     end?: boolean
   }
+  label?: (node: GraphNode<T>) => string
   nodeClass?: (node: GraphNode<T>) => string
   linkClass?: (link: GraphLink<T>) => string
   onNodeClick?: (node: GraphNode<T>, event: MouseEvent) => void
@@ -188,7 +188,7 @@ export class GraphRenderer<T> extends Renderer<GraphLayout<T>, GraphRendererOpti
         .attr('y', d => d.y)
         .style('text-anchor', d => (d.x >= 0) ? 'start' : 'end')
         .style('dominant-baseline', 'central')
-        .attr('dx', d => (d.r + 4) * (d.x >= 0 ? 1 : -1))
+        .attr('dx', d => (d.r + 6) * (d.x >= 0 ? 1 : -1))
         .text(d => this.options.label(d));
     }
 

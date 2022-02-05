@@ -5,13 +5,15 @@
 import clsx from 'clsx';
 import React, { useMemo } from 'react';
 
-import { FullScreen, SvgContextProvider } from '@dxos/gem-core';
+import { FullScreen, Grid, SVG, SVGContextProvider, Zoom } from '@dxos/gem-core';
 
 import {
   convertTreeToGraph,
-  createTree, defaultGraphStyles,
-  Graph, GraphNode,
-  SVG,
+  createTree,
+  defaultGraphStyles,
+  Graph,
+  GraphNode,
+  Markers,
   TestGraphModel,
   TestGraphModelAdapter,
   TestNode,
@@ -27,29 +29,35 @@ export const Primary = () => {
     () => new TestGraphModelAdapter(new TestGraphModel(convertTreeToGraph(createTree({ depth: 4 })))),
   []);
 
-  // TODO(burdon): Selection, class names.
+  // TODO(burdon): Hover/show label.
   // TODO(burdon): HOCs for Grid, Zoom, etc.
   return (
     <FullScreen>
-      <SvgContextProvider>
+      <SVGContextProvider>
         <SVG>
-          <Graph
-            className={clsx(defaultGraphStyles)}
-            drag
-            model={adapter}
-            nodeClass={(node: GraphNode<TestNode>) => selected.has(node.id) ? 'selected' : undefined}
-            onSelect={(node: GraphNode<TestNode>) => {
-              if (selected.has(node.id)) {
-                selected.delete(node.id);
-              } else {
-                selected.add(node.id);
-              }
+          <Markers />
+          <Grid axis />
+          <Zoom extent={[1/2, 2]}>
+            <Graph
+              className={clsx(defaultGraphStyles)}
+              drag
+              arrows
+              model={adapter}
+              label={(node: GraphNode<TestNode>) => selected.has(node.id) ? node.data.label : undefined}
+              nodeClass={(node: GraphNode<TestNode>) => selected.has(node.id) ? 'selected' : undefined}
+              onSelect={(node: GraphNode<TestNode>) => {
+                if (selected.has(node.id)) {
+                  selected.delete(node.id);
+                } else {
+                  selected.add(node.id);
+                }
 
-              adapter.model.update();
-            }}
-          />
+                adapter.model.update();
+              }}
+            />
+          </Zoom>
         </SVG>
-      </SvgContextProvider>
+      </SVGContextProvider>
     </FullScreen>
   );
 };

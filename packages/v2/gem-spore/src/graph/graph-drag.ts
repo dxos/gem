@@ -5,7 +5,7 @@
 import * as d3 from 'd3';
 import { Simulation } from 'd3-force';
 
-import { D3DragEvent, Point, SvgContext } from '@dxos/gem-core';
+import { D3DragEvent, Point, SVGContext } from '@dxos/gem-core';
 
 import { GraphLink, GraphNode } from './types';
 
@@ -33,7 +33,7 @@ enum Mode {
  * @param options
  */
 export const createSimulationDrag = <T extends any>(
-  context: SvgContext,
+  context: SVGContext,
   simulation: Simulation<GraphNode<T>, GraphLink<T>>,
   options: DragOptions<T> = defaultOptions
 ) => {

@@ -13,27 +13,14 @@ export const styles = {
   `,
 
   // TODO(burdon): Factor out.
-  markers: css`
-    marker {
-      &.arrow path {
-        stroke: orange;
-        stroke-width: 1px;
-        fill: none;
-      }
-      &.dot circle {
-        stroke: orange;
-        stroke-width: 2px;
-        fill: #FFF;
-      }
-    }
-  `,
-
-  // TODO(burdon): Factor out.
   linker: css`
     .linker {
       path {
         stroke: orange;
         stroke-dasharray: 10, 5;
+      }
+      path::marker {
+        stroke: red;
       }
     }
   `

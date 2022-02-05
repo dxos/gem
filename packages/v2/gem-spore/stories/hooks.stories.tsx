@@ -7,7 +7,14 @@ import * as d3 from 'd3';
 import React, { useEffect, useMemo, useRef } from 'react';
 
 import { Knobs, KnobsProvider, useButton } from '@dxos/esbuild-book-knobs';
-import { FullScreen, SvgContextProvider, defaultGridStyles, useGrid, useSvgContext, useZoom } from '@dxos/gem-core';
+import {
+  FullScreen,
+  SVGContextProvider,
+  defaultGridStyles,
+  useGrid,
+  useSvgContext,
+  useZoom
+} from '@dxos/gem-core';
 
 import {
   GraphForceProjector,
@@ -17,12 +24,13 @@ import {
   GraphRenderer,
   TestNode,
   convertToGraphData,
+  convertTreeToGraph,
   createMarkers,
   createSimulationDrag,
   createTree,
-  convertTreeToGraph,
-  linkerRenderer,
   defaultGraphStyles,
+  defaultMarkerStyles,
+  linkerRenderer,
 } from '../src';
 import { styles } from './helpers';
 
@@ -140,7 +148,9 @@ const SecondaryComponent = ({ model }: ComponentProps) => {
         renderer.fireBullet(node);
       },
       onLinkClick: (link: GraphLink<TestNode>, event: MouseEvent) => {
-        model.deleteLink(link);
+        if (event.metaKey) {
+          model.deleteLink(link);
+        }
       },
       arrows: {
         end: true
@@ -177,7 +187,7 @@ const SecondaryComponent = ({ model }: ComponentProps) => {
 
   return (
     <svg ref={context.ref}>
-      <g ref={markersRef} className={styles.markers} />
+      <defs ref={markersRef} className={defaultMarkerStyles} />
       <g ref={grid.ref} className={defaultGridStyles} />
       <g ref={zoom.ref} className={clsx(defaultGraphStyles, styles.linker)}>
         <g ref={graphRef} />
@@ -191,12 +201,26 @@ export const Primary = () => {
 
   return (
     <FullScreen>
-      <SvgContextProvider>
+      <SVGContextProvider>
         <PrimaryComponent model={model} />
-      </SvgContextProvider>
+      </SVGContextProvider>
     </FullScreen>
   );
 }
+
+const Info = () => (
+  <div
+    style={{
+      position: 'absolute',
+      left: 8,
+      bottom: 8,
+      fontFamily: 'sans-serif',
+      color: '#333'
+    }}
+  >
+    ⌘-DRAG to link or create node; ⌘-CLICK to delete link.
+  </div>
+);
 
 export const Secondary = () => {
   const model = useMemo(() => new TestGraphModel(convertTreeToGraph(createTree({ depth: 3 }))), []);
@@ -204,9 +228,10 @@ export const Secondary = () => {
   return (
     <FullScreen>
       <KnobsProvider>
-        <SvgContextProvider>
+        <SVGContextProvider>
           <SecondaryComponent model={model} />
-        </SvgContextProvider>
+        </SVGContextProvider>
+        <Info />
         <Knobs className={styles.knobs} />
       </KnobsProvider>
     </FullScreen>
