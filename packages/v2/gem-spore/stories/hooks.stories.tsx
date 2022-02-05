@@ -7,20 +7,27 @@ import * as d3 from 'd3';
 import React, { useEffect, useMemo, useRef } from 'react';
 
 import { Knobs, KnobsProvider, useButton } from '@dxos/esbuild-book-knobs';
-import { FullScreen, SvgContextProvider, useGrid, useSvgContext, useZoom } from '@dxos/gem-core';
-
-import { GraphForceProjector, GraphNode, GraphRenderer, createMarkers, createSimulationDrag } from '../src';
-import { createItem, styles, TestItem } from './helpers';
+import { FullScreen, SvgContextProvider, defaultGridStyles, useGrid, useSvgContext, useZoom } from '@dxos/gem-core';
 
 import {
-  TestModel,
-  createModel,
-  graphMapper,
-  updateModel
-} from './helpers';
+  GraphForceProjector,
+  TestGraphModel,
+  GraphLink,
+  GraphNode,
+  GraphRenderer,
+  TestNode,
+  convertToGraphData,
+  createMarkers,
+  createSimulationDrag,
+  createTree,
+  convertTreeToGraph,
+  linkerRenderer,
+  defaultGraphStyles,
+} from '../src';
+import { styles } from './helpers';
 
 export default {
-  title: 'gem-x/Graph'
+  title: 'gem-x/hooks'
 };
 
 // TODO(burdon): Dynamic classname for nodes (e.g., based on selection).
@@ -28,61 +35,73 @@ export default {
 // TODO(burdon): Delete nodes (alt-click).
 
 interface ComponentProps {
-  model: TestModel
+  model: TestGraphModel
 }
 
 const PrimaryComponent = ({ model }: ComponentProps) => {
   const context = useSvgContext();
+  const graphRef = useRef<SVGGElement>();
   const grid = useGrid();
   const zoom = useZoom();
 
   const { projector, renderer } = useMemo(() => ({
-    projector: new GraphForceProjector(context, graphMapper),
-    renderer: new GraphRenderer(context, zoom.ref)
+    projector: new GraphForceProjector(context),
+    renderer: new GraphRenderer(context, graphRef)
   }), []);
 
   useEffect(() => {
+    const unsubscribe = model.updated.on(graph => {
+      projector.update(convertToGraphData(graph));
+    });
+
     projector.updated.on(({ layout }) => {
       renderer.update(layout);
     });
 
-    projector.update(model);
     projector.start();
-
-    const interval = setInterval(() => {
-      if (model.items.length < 200) {
-        updateModel(model); // TODO(burdon): Subscription.
-        projector.update(model);
-      }
-    }, 10);
+    model.update();
 
     return () => {
-      clearInterval(interval);
+      unsubscribe();
       projector.stop();
     }
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (model.graph.nodes.length > 200) {
+        clearInterval(interval);
+      }
+
+      model.createNodes(model.getRandomNode());
+    }, 10);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <svg ref={context.ref}>
-      <g ref={grid.ref} className={styles.grid} />
-      <g ref={zoom.ref} className={styles.graph} />
+      <g ref={grid.ref} className={defaultGridStyles} />
+      <g ref={zoom.ref} className={defaultGraphStyles}>
+        <g ref={graphRef} />
+      </g>
     </svg>
   );
 };
 
 const SecondaryComponent = ({ model }: ComponentProps) => {
   const context = useSvgContext();
+  const graphRef = useRef<SVGGElement>();
   const grid = useGrid();
   const zoom = useZoom({ extent: [1, 2] });
   const markersRef = useRef<SVGGElement>();
 
   useButton('Test', () => {
-    updateModel(model); // TODO(burdon): Subscription.
-    projector.update(model);
+    model.createNodes();
   });
 
   const { projector, renderer } = useMemo(() => {
-    const projector = new GraphForceProjector(context, graphMapper, {
+    const projector = new GraphForceProjector<TestNode>(context, {
       guides: true,
       forces: {
         manyBody: {
@@ -97,36 +116,32 @@ const SecondaryComponent = ({ model }: ComponentProps) => {
 
     // TODO(burdon): Create class?
     const drag = createSimulationDrag(context, projector._simulation, {
-      onSelect: (target) => {
-        console.log('select', target);
-      },
       onDrag: (source, target, point) => {
-        renderer.updateLink(source, target, point);
+        linkerRenderer(graphRef.current, source, target, point);
       },
       onDrop: (source, target) => {
-        renderer.updateLink();
-
-        const parent = model.items.find(item => item.id === source.id);
+        linkerRenderer(graphRef.current);
+        const parent = model.getNode(source.id);
         if (target) {
-          const child = model.items.find(item => item.id === target.id);
-          parent.children.push(target.id);
-          child.parent = parent.id;
+          const child = model.getNode(target.id);
+          model.createLink(parent, child);
         } else {
           // TODO(burdon): Set start position.
-          const item = createItem(parent);
-          model.items.push(item);
-          parent.children.push(item.id);
+          model.createNodes(parent);
         }
-
-        projector.update(model);
       }
     });
 
-    const renderer = new GraphRenderer(context, zoom.ref, {
+    const renderer = new GraphRenderer<TestNode>(context, zoom.ref, {
       drag,
-      label: node => node.id.substring(0, 4),
-      nodeClass: (n: GraphNode<TestItem>) => n.data.type === 'org' ? 'selected' : undefined,
-      bullets: true,
+      label: (node: GraphNode<TestNode>) => node.id.substring(0, 4),
+      nodeClass: (node: GraphNode<TestNode>) => node.data.type === 'org' ? 'selected' : undefined,
+      onNodeClick: (node: GraphNode<TestNode>, event: MouseEvent) => {
+        renderer.fireBullet(node);
+      },
+      onLinkClick: (link: GraphLink<TestNode>, event: MouseEvent) => {
+        model.deleteLink(link);
+      },
       arrows: {
         end: true
       }
@@ -139,21 +154,22 @@ const SecondaryComponent = ({ model }: ComponentProps) => {
   }, []);
 
   useEffect(() => {
+    const unsubscribe = model.updated.on(graph => {
+      projector.update(convertToGraphData(graph));
+    });
+
     projector.updated.on(({ layout }) => {
       renderer.update(layout);
     });
 
-    projector.update(model);
     projector.start();
+    model.update();
 
     return () => {
+      unsubscribe();
       projector.stop();
     }
   }, []);
-
-  useEffect(() => {
-    projector.update(model);
-  }, [model]);
 
   useEffect(() => {
     d3.select(markersRef.current).call(createMarkers());
@@ -162,14 +178,16 @@ const SecondaryComponent = ({ model }: ComponentProps) => {
   return (
     <svg ref={context.ref}>
       <g ref={markersRef} className={styles.markers} />
-      <g ref={grid.ref} className={styles.grid} />
-      <g ref={zoom.ref} className={clsx(styles.graph, styles.linker)} />
+      <g ref={grid.ref} className={defaultGridStyles} />
+      <g ref={zoom.ref} className={clsx(defaultGraphStyles, styles.linker)}>
+        <g ref={graphRef} />
+      </g>
     </svg>
   );
 };
 
 export const Primary = () => {
-  const model = useMemo(() => createModel(3), []);
+  const model = useMemo(() => new TestGraphModel(convertTreeToGraph(createTree({ depth: 3 }))), []);
 
   return (
     <FullScreen>
@@ -181,7 +199,7 @@ export const Primary = () => {
 }
 
 export const Secondary = () => {
-  const model = useMemo(() => createModel(3), []);
+  const model = useMemo(() => new TestGraphModel(convertTreeToGraph(createTree({ depth: 3 }))), []);
 
   return (
     <FullScreen>

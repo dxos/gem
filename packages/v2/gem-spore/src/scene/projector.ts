@@ -7,37 +7,37 @@ import { EventEmitter, SvgContext } from '@dxos/gem-core';
 /**
  * Generates a layout to be rendered.
  */
-// TODO(burdon): Rename Layout?
-export abstract class Projector<MODEL, LAYOUT, OPTIONS> {
+export abstract class Projector<DATA, LAYOUT, OPTIONS> {
   public readonly updated = new EventEmitter<{ layout: LAYOUT }>();
 
   constructor (
     private readonly _context: SvgContext,
-    private readonly _mapper: (model: MODEL, layout: LAYOUT) => LAYOUT,
     private readonly _options?: OPTIONS
   ) {}
+
+  get context (): SvgContext {
+    return this._context;
+  }
 
   get options (): OPTIONS {
     return this._options || {} as OPTIONS;
   }
 
-  update (model: MODEL) {
-    this.onUpdate(this._mapper(model, this.getLayout()));
+  update (data: DATA) {
+    this.onUpdate(data);
   }
 
-  start () {
-    this.onStart();
+  async start () {
+    await this.onStart();
   }
 
   async stop () {
     await this.onStop();
   }
 
-  protected abstract getLayout (): LAYOUT;
+  protected abstract onUpdate (data: DATA);
 
-  protected abstract onUpdate (layout: LAYOUT);
-
-  protected onStart () {}
+  protected async onStart () {}
 
   protected async onStop () {}
 }

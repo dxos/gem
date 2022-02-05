@@ -12,14 +12,7 @@ export const styles = {
     padding: 8px;
   `,
 
-  stats: css`
-    text {
-      font-family: monospace;
-      font-size: 18px;
-      fill: #999;
-    }
-  `,
-
+  // TODO(burdon): Factor out.
   markers: css`
     marker {
       &.arrow path {
@@ -35,63 +28,13 @@ export const styles = {
     }
   `,
 
+  // TODO(burdon): Factor out.
   linker: css`
     .linker {
       path {
         stroke: orange;
         stroke-dasharray: 10, 5;
       }
-    }
-  `,
-
-  grid: css`
-    path.axis {
-      stroke: #BBB;
-    }
-    path.major {
-      stroke: #F0F0F0;
-    }
-    path.minor {
-      stroke: #F5F5F5;
-    }
-  `,
-
-  graph: css`
-    .guides {
-      circle {
-        fill: #FAFAFA;
-        stroke: coral;
-        stroke-width: 4px;
-        stroke-dasharray: 15, 5;
-        opacity: 0.2;
-      }
-    }
-
-    circle.bullet {
-      stroke: none;
-      fill: #999;
-    }
-
-    g.node {
-      &.selected {
-        circle {
-          stroke: darkblue;
-          fill: cornflowerblue;
-        }
-      }
-
-      circle {
-        stroke: seagreen;
-        fill: #F5F5F5;
-      }
-      text {
-        fill: #666
-      }
-    }
-
-    path.link {
-      stroke: orange;
-      fill: none;
     }
   `
 };

@@ -7,18 +7,17 @@ import { Simulation } from 'd3-force';
 
 import { D3DragEvent, Point, SvgContext } from '@dxos/gem-core';
 
-import { GraphLink, GraphNode } from './defs';
+import { GraphLink, GraphNode } from './types';
 
-export interface DragOptions {
+export interface DragOptions<T> {
   dragMod?: string
   linkMod?: string
   freezeMod?: string
-  onSelect?: (target: GraphNode<any>) => void
-  onDrag?: (source?: GraphNode<any>, target?: GraphNode<any>, point?: Point) => void
-  onDrop?: (source: GraphNode<any>, target?: GraphNode<any>) => void
+  onDrag?: (source?: GraphNode<T>, target?: GraphNode<T>, point?: Point) => void
+  onDrop?: (source: GraphNode<T>, target?: GraphNode<T>) => void
 }
 
-export const defaultOptions: DragOptions = {
+export const defaultOptions: DragOptions<any> = {
   linkMod: 'metaKey',
   freezeMod: 'shiftKey'
 };
@@ -33,15 +32,15 @@ enum Mode {
  * @param simulation
  * @param options
  */
-export const createSimulationDrag = (
+export const createSimulationDrag = <T extends any>(
   context: SvgContext,
-  simulation: Simulation<GraphNode<any>, GraphLink>,
-  options: DragOptions = defaultOptions
+  simulation: Simulation<GraphNode<T>, GraphLink<T>>,
+  options: DragOptions<T> = defaultOptions
 ) => {
   let mode: Mode = undefined;
   let started = false;
-  let source: GraphNode<any> = undefined;
-  let target: GraphNode<any> = undefined;
+  let source: GraphNode<T> = undefined;
+  let target: GraphNode<T> = undefined;
 
   const keyMod = (event: MouseEvent, key: string): boolean => {
     const modKey = options?.[key] ?? defaultOptions[key];

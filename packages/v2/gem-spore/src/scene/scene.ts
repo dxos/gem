@@ -7,8 +7,6 @@ import { EventHandle } from '@dxos/gem-core';
 import { Projector } from './projector';
 import { Renderer } from './renderer';
 
-export type ObjectId = string
-
 /**
  * Component wihtin a scene.
  */
