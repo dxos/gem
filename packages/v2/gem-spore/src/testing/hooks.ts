@@ -2,10 +2,10 @@
 // Copyright 2020 DXOS.org
 //
 
-import { useStateRef } from '@dxos/gem-core';
 import update from 'immutability-helper';
 import faker from 'faker';
-import get from 'lodash/get';
+
+import { useStateRef } from '@dxos/gem-core';
 
 import { createNode, createLink } from './data';
 import { TestGraph, TestNode } from './types';
