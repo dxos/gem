@@ -5,7 +5,6 @@
 import faker from 'faker';
 
 import { GraphLayout, ObjectId } from '../../src';
-import { Stats } from './stats';
 
 // TODO(burdon): Replace with Graph data generator.
 
@@ -49,6 +48,13 @@ export const createModel = (maxDepth = 4): TestModel => {
   return { items };
 };
 
+export const createItem = (parent = undefined) => ({
+  id: faker.datatype.uuid(),
+  parent: parent?.id,
+  children: [],
+  type: faker.random.arrayElement(['org', 'person', 'project', 'task'])
+})
+
 export const updateModel = (model: TestModel) => {
   const parent = model.items.length ? model.items[Math.floor(Math.random() * model.items.length)] : undefined;
 
@@ -65,17 +71,11 @@ export const updateModel = (model: TestModel) => {
     return;
   }
 
-  const id = faker.datatype.uuid();
+  const item = createItem(parent);
+  model.items.push(item);
   if (parent) {
-    parent.children.push(id);
+    parent.children.push(item.id);
   }
-
-  model.items.push({
-    id,
-    parent: parent?.id,
-    children: [],
-    type: faker.random.arrayElement(['org', 'person', 'project', 'task'])
-  });
 };
 
 // TODO(burdon): Generalize based on paths/filter.

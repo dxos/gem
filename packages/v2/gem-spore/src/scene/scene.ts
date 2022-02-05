@@ -26,8 +26,8 @@ export class Part<MODEL> {
 
   start () {
     // Listen for projector updates.
-    this._updateListener = this._projector.updated.on(({ layout, options }) => {
-      this._renderer.update(layout, options);
+    this._updateListener = this._projector.updated.on(({ layout }) => {
+      this._renderer.update(layout);
     });
 
     this._projector.start();

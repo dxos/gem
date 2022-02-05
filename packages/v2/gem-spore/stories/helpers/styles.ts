@@ -22,12 +22,12 @@ export const styles = {
 
   markers: css`
     marker {
-      path.arrow {
+      &.arrow path {
         stroke: orange;
         stroke-width: 1px;
         fill: none;
       }
-      circle.dot {
+      &.dot circle {
         stroke: orange;
         stroke-width: 2px;
         fill: #FFF;

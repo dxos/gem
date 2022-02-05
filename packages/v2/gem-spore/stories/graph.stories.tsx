@@ -10,7 +10,7 @@ import { Knobs, KnobsProvider, useButton } from '@dxos/esbuild-book-knobs';
 import { FullScreen, SvgContextProvider, useGrid, useSvgContext, useZoom } from '@dxos/gem-core';
 
 import { GraphForceProjector, GraphNode, GraphRenderer, createMarkers, createSimulationDrag } from '../src';
-import { styles, TestItem } from './helpers';
+import { createItem, styles, TestItem } from './helpers';
 
 import {
   TestModel,
@@ -105,13 +105,20 @@ const SecondaryComponent = ({ model }: ComponentProps) => {
       },
       onDrop: (source, target) => {
         renderer.updateLink();
+
+        const parent = model.items.find(item => item.id === source.id);
         if (target) {
-          const parent = model.items.find(item => item.id === source.id);
           const child = model.items.find(item => item.id === target.id);
           parent.children.push(target.id);
           child.parent = parent.id;
-          projector.update(model);
+        } else {
+          // TODO(burdon): Set start position.
+          const item = createItem(parent);
+          model.items.push(item);
+          parent.children.push(item.id);
         }
+
+        projector.update(model);
       }
     });
 
