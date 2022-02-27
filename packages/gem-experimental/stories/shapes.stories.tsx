@@ -172,7 +172,7 @@ const Shape = ({ showDots = true }) => {
 
     root
       .selectAll<SVGGElement, Data>('g')
-      .data(data, d => d.id)
+      .data(data, (d: Data) => d.id)
       .join(
         enter => enter.append('g').attr('class', 'shape').call(group => {
           group

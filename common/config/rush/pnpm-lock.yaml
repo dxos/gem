@@ -124,6 +124,7 @@ importers:
       '@dxos/esbuild-book-knobs': ^2.2.5
       '@dxos/esbuild-server': ^2.2.5
       '@dxos/eslint-plugin': ~1.0.10
+      '@dxos/gem-core': workspace:*
       '@dxos/gem-spore': workspace:*
       '@emotion/css': ^11.7.1
       '@types/d3': ^6.3.0
@@ -159,6 +160,7 @@ importers:
       '@dxos/esbuild-book-knobs': 2.2.5_047b9a24b83afbb1643940d790b09e4b
       '@dxos/esbuild-server': 2.2.5
       '@dxos/eslint-plugin': 1.0.24_551fc94c036cf4601f85729afb1bcaa2
+      '@dxos/gem-core': link:../gem-core
       '@dxos/gem-spore': link:../gem-spore
       '@emotion/css': 11.7.1
       '@types/d3': 6.7.5
@@ -291,13 +293,16 @@ importers:
       '@types/faker': ^5.1.6
       '@types/jest': ^27.4.0
       '@types/lodash': ^4.14.168
+      clsx: ~1.1.1
       csstype: ^3.0.10
       d3: ^7.2.1
+      d3-force: ~3.0.0
       debug: ^4.1.1
       eslint: ^7.7.0
       eslint-plugin-react: ^7.22.0
       expect: ~27.0.2
       faker: ^5.5.3
+      immutability-helper: ~3.1.1
       jest: ^27.4.5
       react: ^17.0.2
       react-dom: ^17.0.2
@@ -306,9 +311,12 @@ importers:
       use-resize-observer: ^8.0.0
     dependencies:
       '@dxos/gem-core': link:../gem-core
+      clsx: 1.1.1
       csstype: 3.0.10
       d3: 7.3.0
+      d3-force: 3.0.0
       debug: 4.3.3
+      immutability-helper: 3.1.1
       use-resize-observer: 8.0.0_react-dom@17.0.2+react@17.0.2
     devDependencies:
       '@babel/core': 7.17.5
@@ -783,8 +791,8 @@ packages:
       react: '*'
       react-dom: '*'
     dependencies:
-      '@emotion/css': 11.7.1
-      '@emotion/react': 11.8.1_react@17.0.2
+      '@emotion/css': 11.7.1_@babel+core@7.17.5
+      '@emotion/react': 11.8.1_@babel+core@7.17.5+react@17.0.2
       clsx: 1.1.1
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
