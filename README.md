@@ -2,6 +2,8 @@
 
 [Chromatic Storybook](https://www.chromatic.com/library?appId=6000bc9133d715002117d459)
 
+Version 1
+
 ## Usage
 
 NOTE: Requires Node version 12.
