@@ -32,13 +32,13 @@ const styles = css`
   circle.connector {
     fill: orange;
     stroke: #333;
-    stroke-width: 1px;
+    stroke-width: 0.5px;
     opacity: 0.8;
   }   
   circle {
     fill: none;
     stroke: #333;
-    stroke-width: 1px;
+    stroke-width: 0.5px;
   }
   rect {
     fill: #FFF;
@@ -127,7 +127,7 @@ const createObjects = (n = 3) => {
 };
 
 export const Primary = () => {
-  const objects = useMemo(createObjects, []);
+  const objects = useMemo(() => createObjects(5), []);
 
   return (
     <FullScreen>
