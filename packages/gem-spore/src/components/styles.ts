@@ -66,10 +66,9 @@ export const defaultGraphStyles = css`
       stroke-width: 16px;
       opacity: 0.2;
     }
-  }
-
-  circle.bullet {
-    fill: #999;
-    stroke: none;
+    circle.bullet {
+      fill: orange;
+      stroke: none;
+    }
   }
 `;

@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@dxos/esbuild-book-knobs": "^2.2.5",
-    "@dxos/esbuild-server": "^2.2.5",
+    "@dxos/esbuild-server": "^2.2.8",
     "@dxos/eslint-plugin": "~1.0.10",
     "@dxos/gem-core": "workspace:*",
     "@dxos/gem-spore": "workspace:*",
