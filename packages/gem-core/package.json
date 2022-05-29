@@ -43,12 +43,12 @@
     "csstype": "^3.0.10",
     "d3": "^7.2.1",
     "debug": "^4.1.1",
-    "use-resize-observer": "^8.0.0"
+    "use-resize-observer": "^8.0.0",
   },
   "devDependencies": {
     "@dxos/esbuild-book-knobs": "^2.2.5",
     "@dxos/esbuild-plugins": "^2.19.2",
-    "@dxos/esbuild-server": "^2.2.5",
+    "@dxos/esbuild-server": "^2.2.8",
     "@dxos/eslint-plugin": "~1.0.10",
     "@emotion/css": "^11.7.1",
     "@emotion/react": "^11.7.1",

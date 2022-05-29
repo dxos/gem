@@ -5,6 +5,9 @@
 import * as d3 from 'd3';
 import type { ZoomTransform } from 'd3';
 import { RefObject, useEffect, useMemo, useRef } from 'react';
+import defaultsdeep from 'lodash/defaultsdeep';
+
+console.log('::', defaultsdeep);
 
 import { SVGContext } from '../context';
 import { useSvgContext } from './useSvgContext';
@@ -19,7 +22,7 @@ export type ZoomOptions = {
 
 export const defaultOptions: ZoomOptions = {
   enabled: true,
-  extent: [1/2, 2],
+  extent: [1 / 2, 2],
   onDblClick: (zoom: ZoomHandler) => zoom.reset()
 };
 
@@ -27,9 +30,9 @@ export const defaultOptions: ZoomOptions = {
  * Zoom API.
  */
 export class ZoomHandler {
+  private readonly _options: ZoomOptions;
   private readonly _zoom;
   private _enabled: boolean;
-  private readonly _options: ZoomOptions;
 
   constructor (
     private readonly _ref: RefObject<SVGGElement>,
@@ -38,6 +41,8 @@ export class ZoomHandler {
   ) {
     this._options = Object.assign({}, options, defaultOptions);
     this._enabled = this._options.enabled ?? true;
+
+    console.log('>>>>>>>>>>', this._options.extent);
 
     // https://github.com/d3/d3-zoom#zoom
     this._zoom = d3.zoom()
@@ -49,6 +54,10 @@ export class ZoomHandler {
    */
   get ref () {
     return this._ref;
+  }
+
+  get extent () {
+    return this._options.extent;
   }
 
   get zoom () {

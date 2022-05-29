@@ -2,10 +2,10 @@
 // Copyright 2020 DXOS.org
 //
 
+import * as d3 from 'd3';
 import clsx from 'clsx';
 import debug from 'debug';
 import faker from 'faker';
-import * as d3 from 'd3';
 import React, { useEffect, useMemo, useRef } from 'react';
 
 import { Knobs, KnobsProvider, useButton } from '@dxos/esbuild-book-knobs';

@@ -21,7 +21,9 @@ interface BulletOptions {
  * @param options
  */
 export const createBullets = (
-  group: SVGGElement, nodeId: string, options: BulletOptions = {}
+  group: SVGGElement,
+  nodeId: string,
+  options: BulletOptions = {}
 ): D3Callable => {
   return (selection: D3Selection) => {
     const { max = 32, radius = 3, delay = 50, minDuration = 100, maxDuration = 500 } = options;
@@ -33,10 +35,11 @@ export const createBullets = (
 
         // Match source node.
         if (source.id === nodeId) {
-          const path = d3.select(links[i]);
-          let p = path.node().getPointAtLength(0);
+          const link = links[i];
+          const path = d3.select(link);
+          const p = path.node().getPointAtLength(0);
 
-          const bullet = d3.select(group)
+          const bullet = d3.select(link.parentNode)
             .append('circle')
             .attr('class', 'bullet')
             .attr('cx', p.x)
@@ -44,35 +47,33 @@ export const createBullets = (
             .attr('r', radius);
 
           bullet
-            // Start animation.
+            // Start transition.
             .transition()
             .delay(delay)
             .duration(minDuration + Math.random() * maxDuration)
             .ease(d3.easeLinear)
             .tween('pathTween', function () {
-              let node = this;
-              let length = path.node().getTotalLength();
-              let r = d3.interpolate(0, length);
-
-              return (t) => {
-                let point = path.node().getPointAtLength(r(t));
-                d3.select(node)
+              const length = path.node().getTotalLength();
+              const r = d3.interpolate(0, length);
+              return t => {
+                const point = path.node().getPointAtLength(r(t));
+                d3.select(this)
                   .attr('cx', point.x)
                   .attr('cy', point.y);
               };
             })
 
-            // End of transition.
+            // End transition.
             .on('end', function () {
               d3.select(this).remove();
 
-              // Propagate with circuit breaker to prevent infinite recursion.
-              let num = d3.select(group).selectAll('circle.bullet').size();
-              if (num < max) {
+              // Propagate with circuit-breaker to prevent recursion.
+              const num = d3.select(group).selectAll('circle.bullet').size();
+              if (num > 0 && num < max) {
                 selection.call(createBullets(group, target.id));
               }
             });
         }
       });
-  }
+  };
 };

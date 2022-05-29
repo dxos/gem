@@ -34,10 +34,10 @@
   },
   "devDependencies": {
     "@dxos/esbuild-book-knobs": "^2.2.5",
-    "@dxos/esbuild-server": "^2.2.5",
+    "@dxos/esbuild-server": "^2.2.8",
     "@dxos/eslint-plugin": "~1.0.10",
-    "@dxos/gem-core": "2.2.1-beta.11",
-    "@dxos/gem-spore": "2.2.1-beta.11",
+    "@dxos/gem-core": "workspace:*",
+    "@dxos/gem-spore": "workspace:*",
     "@emotion/css": "^11.7.1",
     "@types/d3": "^6.3.0",
     "@types/faker": "^5.5.9",

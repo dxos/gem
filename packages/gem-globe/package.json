@@ -21,7 +21,7 @@
     "extends": "plugin:@dxos/react"
   },
   "dependencies": {
-    "@dxos/gem-core": "2.2.1-beta.11",
+    "@dxos/gem-core": "workspace:*",
     "d3": "^7.2.1",
     "d3-geo-projection": "^4.0.0",
     "d3-inertia": "^0.4.0",
@@ -35,7 +35,7 @@
   "devDependencies": {
     "@dxos/esbuild-book-knobs": "^2.2.5",
     "@dxos/esbuild-plugins": "^2.19.2",
-    "@dxos/esbuild-server": "^2.2.5",
+    "@dxos/esbuild-server": "^2.2.8",
     "@dxos/eslint-plugin": "~1.0.10",
     "@types/d3": "^7.1.0",
     "@types/node": "^14.0.9",
