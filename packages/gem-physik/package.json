@@ -36,7 +36,7 @@
     "testEnvironment": "node"
   },
   "dependencies": {
-    "@dxos/gem-core": "2.2.1-beta.11",
+    "@dxos/gem-core": "workspace:*",
     "debug": "^4.1.1",
     "matter-js": "^0.18.0",
     "use-resize-observer": "^8.0.0"
