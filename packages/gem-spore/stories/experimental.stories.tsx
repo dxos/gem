@@ -4,141 +4,221 @@
 
 import { css } from '@emotion/css';
 import * as d3 from 'd3';
-import React, { FC, useEffect, useMemo, useRef } from 'react';
+import faker from 'faker';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
+import { Knobs, KnobsProvider, useButton } from '@dxos/esbuild-book-knobs';
 import {
-  D3Callable, D3Selection, FullScreen, Grid, SVG, SVGContextProvider, useZoom, useSvgContext
+  D3Callable,
+  D3Selection,
+  FullScreen,
+  Grid,
+  SVG,
+  SVGContextProvider,
+  useZoom,
+  useSvgContext,
+  SVGContext,
+  Fraction,
 } from '@dxos/gem-core';
 
 export default {
   title: 'gem-spore/experimental'
 };
 
-// TODO(burdon): Zoom.
-// TODO(burdon): Layout.
-// TODO(burdon): Reentrant create and update shapes.
-// TODO(burdon): Shape polymorphism; anchor position/connection points.
+// TODO(burdon): Generator for Kube/Bot data structure with dynamic mutation.
+// TODO(burdon): Hierarchical layout.
+// TODO(burdon): Illustrate swarm.
 
-const one = (type: string, className: string, callable: D3Callable) => (group) => {
+type Obj = {
+  id: string
+  bots: string[]
+}
+
+const createObjects = (n = 5): Obj[] => Array.from({ length: n }).map(() => ({
+  id: faker.datatype.uuid(),
+  bots: Array.from({ length: faker.datatype.number({ min: 1, max: 5 }) }).map(() => faker.datatype.uuid())
+}));
+
+// TODO(burdon): Factor out.
+const createOne = (type: string, className: string, update: D3Callable) => (group) => {
   group
     .selectAll(`${type}.${className}`)
     .data([1])
     .join(type)
     .attr('class', className)
-    .call(callable);
+    .call(update);
 };
 
-const styles = css`
-  circle.connector {
-    fill: orange;
-    stroke: #333;
-    stroke-width: 0.5px;
-    opacity: 0.8;
-  }   
-  circle {
-    fill: none;
-    stroke: #333;
-    stroke-width: 0.5px;
-  }
-  rect {
-    fill: #FFF;
-    stroke: #333;
-    stroke-width: 0.5px;
-  }
-`;
+const styles = {
+  svg: css`
+    circle {
+      stroke: #333;
+      stroke-width: 0.5px;
+    }
+    circle.kube {
+      fill: #FAFAFA;
+    }
+    circle.bot {
+      fill: lightblue;
+    }
+    text {
+      font-size: 8px;
+      font-family: monospace;
+    }
+  `,
 
-const drawRect: D3Callable = (group: D3Selection, context, object) => {
-  const connectors = ['n', 's', 'w', 'e'];
+  knobs: css`
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 8px;
+    border: 1px solid gray;
+  `
+};
 
-  const [x, y] = context.scale.model.toPoint(object);
-  const [width, height] = context.scale.model.toPoint({
-    x: [1, 2],
-    y: [-1, 2]
-  });
-
-  const pos = d => {
-    return {
-      'n': [0, -1],
-      's': [0, 1],
-      'w': [-1, 0],
-      'e': [1, 0]
-    }[d] ?? [0, 0];
-  };
+// TODO(burdon): Tween radius.
+// TODO(burdon): Layout for bots.
+const drawKube: D3Callable = (group: D3Selection, context, r, fade) => {
+  const fadeIn = (d = 2000) => el => el
+    .transition()
+    .duration(d)
+    .attrTween('opacity', () => d3.interpolate(0, 1));
 
   group
-    .selectAll('circle.root')
-    .data([1])
-    .join('rect')
-    .attr('class', 'root')
-    .attr('x', x - width / 2)
-    .attr('y', y - height / 2)
-    .attr('width', width)
-    .attr('height', height);
+    .call(createOne('circle', 'kube', el => el.attr('r', r)));
 
   group
-    .selectAll('circle.connector')
-    .data(connectors)
+    .selectAll('circle.bot')
+    .data(d => d.bots)
     .join('circle')
-    .attr('class', 'connector')
-    .attr('cx', d => x + pos(d)[1] * width / 2)
-    .attr('cy', d => y + pos(d)[0] * height / 2)
+    .attr('class', 'bot')
+    .attr('cx', (d, i, j) => {
+      const a = i * Math.PI * 2 / j.length;
+      return Math.sin(a) * r;
+    })
+    .attr('cy', (d, i, j) => {
+      const a = i * Math.PI * 2 / j.length;
+      return -Math.cos(a) * r;
+    })
     .attr('r', 2);
+
+  // TODO(burdon): Label.
+  // group
+  //   .call(createOne('text', 'kube', el => el
+  //     .text(d => d.id)
+  //     .attr('dy', 2)
+  //     .style('text-anchor', 'middle')
+  //   ));
+
+  group
+    .selectAll('circle')
+    .call(el => el.call(fadeIn(fade ? 1000 : 0)));
 };
 
-const Surface: FC<{
-  objects: any[]
-}> = ({
-  objects = []
-}) => {
+/**
+ * Arranges group elements in a circle.
+ */
+class CircularLayout {
+  // Map of previous positions.
+  private _map = new Map<string, number>();
+  private _radius: Fraction = [1, 1];
+
+  constructor (
+    private readonly _context: SVGContext
+  ) {}
+
+  initialize (radius: Fraction) {
+    this._radius = radius;
+    return this;
+  }
+
+  layout (group) {
+    const objects = group.data();
+    const a = 2 * Math.PI / objects.length;
+    const r = this._context.scale.model.toValue(this._radius);
+
+    // Remove stale objects.
+    const map = new Map<string, number>();
+    objects.forEach(obj => map.set(obj.id, this._map.get(obj.id)));
+    this._map = map;
+
+    return group.each((d, i, nodes) => {
+      const previous = this._map.get(d.id) ?? i * a;
+      d3.select(nodes[i])
+        .transition()
+        .duration(1000)
+        .attrTween('transform', () => {
+          const arc = d3.interpolateNumber(previous, i * a);
+          return t => {
+            const a = arc(t);
+            this._map.set(d.id, a);
+            const x = Math.sin(a) * r;
+            const y = Math.cos(a) * r;
+            return `translate(${x},${-y})`;
+          };
+        });
+    });
+  }
+}
+
+const Container = () => {
   const context = useSvgContext();
   const zoom = useZoom({ extent: [1, 8], zoom: 4 });
   const groupRef = useRef();
 
+  // TODO(burdon): Hierarchical layouts (separate from data structure).
+  const layout = useMemo(() => new CircularLayout(context).initialize([2, 1]), []);
+  const [objects, setObjects] = useState<Obj[]>(() => createObjects(5));
+
+  useButton('Reset',
+    () => setObjects([]));
+  useButton('Add',
+    () => setObjects(objects => [...objects, ...createObjects(1)]));
+  useButton('Remove',
+    () => setObjects(objects => objects.map(obj => faker.datatype.boolean() ? obj : undefined).filter(Boolean)));
+
   useEffect(() => {
+    // TODO(burdon): Based on number of kubes.
+    const r = context.scale.model.toValue([1, 3]);
+
     d3.select(groupRef.current)
-      .selectAll('g')
-      .data(objects)
-      .join('g')
-      .each((object, i, nodes) => {
-        const el = d3.select(nodes[i]);
-        el.call(drawRect, context, object);
-      });
-  }, []);
+      .selectAll<SVGGElement, Obj>('g.obj')
+      .data(objects, (d: Obj) => d.id)
+      .join(
+        enter => enter
+          .append('g')
+          .attr('class', 'obj')
+          .call(drawKube, context, r, true),
+        update => update
+          .call(drawKube, context, r),
+        remove => remove
+          .transition()
+          .duration(1000)
+          .attrTween('opacity', () => d3.interpolate(1, 0))
+          .remove()
+      )
+      .call(layout.layout.bind(layout));
+  }, [objects]);
 
   return (
     <g ref={zoom.ref}>
-      <g ref={groupRef} className={styles} />
+      <g ref={groupRef} className={styles.svg} />
     </g>
   );
 };
 
-const createObjects = (n = 3) => {
-  const objects = [];
-  for (let x = 0; x < n; x++) {
-    for (let y = 0; y < n; y++) {
-      objects.push({
-        x: [x - Math.floor(n / 2), 1],
-        y: [y - Math.floor(n / 2), 1]
-      });
-    }
-  }
-
-  return objects;
-};
-
 export const Primary = () => {
-  const objects = useMemo(() => createObjects(5), []);
-
   return (
     <FullScreen>
-      <SVGContextProvider>
-        <SVG>
-          <Grid axis />
-          <Surface
-            objects={objects}
-          />
-        </SVG>
-      </SVGContextProvider>
+      <KnobsProvider>
+        <SVGContextProvider>
+          <SVG>
+            <Grid axis />
+            <Container />
+          </SVG>
+        </SVGContextProvider>
+        <Knobs className={styles.knobs} />
+      </KnobsProvider>
     </FullScreen>
   );
 };
