@@ -40,14 +40,14 @@ export class SVGContext {
   }
 
   get size (): Size {
-    return this._size
+    return this._size;
   }
 
   /**
    * https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/viewBox
    */
   get viewBox () {
-    const [x, y] = this.center;
+    const [x, y] = this._center;
     return `${x},${y},${this._size.width},${this._size.height}`;
   }
 
