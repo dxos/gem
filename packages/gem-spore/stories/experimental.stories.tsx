@@ -43,14 +43,17 @@ const styles = {
     }
 
     g.kube {
-      circle {
+      > circle {
         fill: #FAFAFA;
+        stroke: #999;
+        stroke-dasharray: 1px;
       }
     }
 
     g.bot {
       circle {
         fill: lightblue;
+        stroke: blue;
       }
       text {
         font-size: 5px;
