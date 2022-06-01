@@ -9,15 +9,16 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Knobs, KnobsProvider, useButton } from '@dxos/esbuild-book-knobs';
 import {
+  D3Callable,
   D3Selection,
+  Fraction,
   FullScreen,
   Grid,
   SVG,
-  SVGContextProvider,
-  useZoom,
-  useSvgContext,
   SVGContext,
-  Fraction
+  SVGContextProvider,
+  useSvgContext,
+  useZoom
 } from '@dxos/gem-core';
 
 export default {
@@ -25,8 +26,7 @@ export default {
 };
 
 // TODO(burdon): Generator for Kube/Bot data structure with dynamic mutation.
-// TODO(burdon): Hierarchical layout.
-// TODO(burdon): Illustrate swarm.
+// TODO(burdon): Illustrate swarm connections between bots.
 
 type Kube = {
   id: string
@@ -38,14 +38,20 @@ type Kube = {
 const styles = {
   svg: css`
     circle {
+      fill: none;
       stroke: #333;
       stroke-width: 0.5px;
+    }
+    
+    circle.outer {
+      stroke: #CCC;
+      stroke-dasharray: 1px;
     }
 
     g.kube {
       > circle {
         fill: #FAFAFA;
-        stroke: #999;
+        stroke: #CCC;
         stroke-dasharray: 1px;
       }
     }
@@ -73,10 +79,25 @@ const styles = {
 };
 
 /**
+ * Create single child element.
+ */
+// TODO(burdon): Factor out.
+export const createOne = (type: string, className: string, callable?: D3Callable): D3Callable => el => {
+  const result = el
+    .selectAll(`${type}.${className}`)
+    .data(d => [d])
+    .join(enter => enter.append(type).attr('class', className));
+
+  if (callable) {
+    result.call(callable);
+  }
+};
+
+/**
  * Arranges group elements in a circle.
  */
 class CircularLayout {
-  // Map of previous positions.
+  // Map of previous angular positions.
   private _map = new Map<string, number>();
   private _radius: Fraction = [1, 1];
 
@@ -94,17 +115,18 @@ class CircularLayout {
     return this;
   }
 
-  doLayout (groups) {
+  doLayout (groups: D3Selection) {
     const objects = groups.data();
     const a = 2 * Math.PI / objects.length;
     const r = this._context.scale.model.toValue(this._radius);
 
-    // Remove stale objects.
+    // Remove positions for stale objects.
     const map = new Map<string, number>();
     objects.forEach(obj => map.set(obj.id, this._map.get(obj.id)));
     this._map = map;
 
-    return groups.each((d, i, nodes) => {
+    // Layout groups.
+    groups.each((d, i, nodes) => {
       const previous = this._map.get(d.id) ?? i * a;
       d3.select(nodes[i])
         .transition()
@@ -123,38 +145,20 @@ class CircularLayout {
   }
 }
 
-// TODO(burdon): Factor out.
-export class SuperMap<K, V> extends Map<K, V> {
-  constructor (
-    private readonly _factory: () => V
-  ) {
-    super();
-  }
-
-  get (k: K) {
-    let value = super.get(k);
-    if (!value) {
-      value = this._factory();
-      super.set(k, value);
-    }
-
-    return value;
-  }
-}
-
-// TODO(burdon): Tween radius.
-// TODO(burdon): Layout for bots.
-// TODO(burdon): Create class.
-class KubeRenderer {
+/**
+ * Layout bots within KUBE node.
+ */
+class KubeLayout {
+  // TODO(burdon): Tween radius.
   private _radius: Fraction = [3, 1];
-  private readonly _kubeLayouts = new Map<string, CircularLayout>();
+  private readonly _kubeLayoutMap = new Map<string, CircularLayout>();
 
   constructor (
     private readonly _context: SVGContext
   ) {}
 
-  get render () {
-    return this.doRender.bind(this);
+  get layout () {
+    return this.doLayout.bind(this);
   }
 
   initialize (radius: Fraction) {
@@ -162,25 +166,20 @@ class KubeRenderer {
     return this;
   }
 
-  doRender (group: D3Selection) {
+  doLayout (group: D3Selection) {
     const r2 = this._context.scale.model.toValue(this._radius);
 
-    // TODO(burdon): Factor out pattern?
+    // Outline.
     group
-      .selectAll('circle.main')
-      .data(d => [d])
-      .join('circle')
-      .attr('class', 'main')
-      .attr('r', r2);
+      .call(createOne('circle', 'main', el => el.attr('r', r2)));
 
     // Draw bots.
     group
       .each((d, i, nodes) => {
-        // TODO(burdon): Map util.
-        let layout = this._kubeLayouts.get(d.id);
+        let layout = this._kubeLayoutMap.get(d.id);
         if (!layout) {
           layout = new CircularLayout(this._context, 500).initialize(this._radius);
-          this._kubeLayouts.set(d.id, layout);
+          this._kubeLayoutMap.set(d.id, layout);
         }
 
         d3.select(nodes[i])
@@ -190,7 +189,9 @@ class KubeRenderer {
             enter => enter
               .append('g')
               .attr('class', 'bot'),
+
             update => update,
+
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             remove => remove
@@ -202,6 +203,7 @@ class KubeRenderer {
               .remove()
           )
 
+          // Layout bots.
           .call(layout.layout)
 
           .call(el => {
@@ -215,7 +217,7 @@ class KubeRenderer {
             el.selectAll('circle')
               .data(d => [d])
               .join('circle')
-              .attr('r', 2);
+              .attr('r', 1);
 
             el.selectAll('text')
               .data(d => [d])
@@ -229,6 +231,68 @@ class KubeRenderer {
   }
 }
 
+/**
+ * Layout network of KUBE nodes.
+ */
+class MeshLayout {
+  private readonly _circleLayout: CircularLayout;
+  private readonly _kubeLayout: KubeLayout;
+
+  constructor (
+    private readonly _context: SVGContext,
+    private readonly _radius: Fraction = [5, 2]
+  ) {
+    this._circleLayout = useMemo(() => new CircularLayout(this._context).initialize(this._radius), []);
+    this._kubeLayout = useMemo(() => new KubeLayout(this._context).initialize([3, 5]), []);
+  }
+
+  get layout () {
+    return this.doLayout.bind(this);
+  }
+
+  // Note: Don't do transitions inside join.
+  doLayout (group: D3Selection, objects: Kube[]) {
+    group
+      .call(createOne('circle', 'outer', el => el.attr('r', this._context.scale.model.toValue(this._radius))));
+
+    group
+      .selectAll<SVGGElement, Kube>('g.kube')
+      .data(objects, (d: Kube) => d.id)
+      .join(
+        enter => enter
+          .append('g')
+          .attr('class', 'kube')
+          .call(this._kubeLayout.layout)
+          // TODO(burdon): Change eslint config for D3.
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          .call(el => el
+            .selectAll('*')
+            .transition()
+            .duration(1000)
+            .attrTween('opacity', () => d3.interpolate(0, 1))),
+
+        update => update
+          .call(this._kubeLayout.layout),
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        remove => remove
+          .transition()
+          .duration(1000)
+          .attrTween('opacity', () => d3.interpolate(1, 0))
+          .remove()
+      )
+
+      // Layout after created.
+      .call(this._circleLayout.layout);
+  }
+}
+
+//
+// Main layout.
+//
+
 const createObjects = (n = 5): Kube[] => Array.from({ length: n }).map(() => ({
   id: `kube-${faker.datatype.uuid()}`,
   bots: Array.from({ length: faker.datatype.number({ min: 1, max: 5 }) }).map(() => ({ id: faker.datatype.uuid() }))
@@ -239,8 +303,7 @@ const Container = () => {
   const zoom = useZoom({ extent: [1, 8], zoom: 4 });
   const groupRef = useRef();
 
-  const layout = useMemo(() => new CircularLayout(context).initialize([2, 1]), []);
-  const renderer = useMemo(() => new KubeRenderer(context).initialize([3, 5]), []);
+  const layout = new MeshLayout(context);
   const [objects, setObjects] = useState<Kube[]>(() => createObjects(5));
 
   useButton('Reset', () => setObjects([]));
@@ -250,7 +313,6 @@ const Container = () => {
   useButton('Mutate', () => {
     setObjects(objects => objects.map(({ bots, ...rest }) => ({
       bots: faker.datatype.boolean() ? bots : [
-        // ...bots,
         ...bots.map(bot => faker.datatype.number(10) > 7 ? bot : undefined).filter(Boolean),
         ...Array.from({ length: faker.datatype.number(4) }).map(() => ({ id: faker.datatype.uuid() }))
       ],
@@ -260,36 +322,8 @@ const Container = () => {
 
   useEffect(() => {
     // console.log(JSON.stringify(objects, undefined, 2));
-
-    // Note: Don't do transitions inside join.
-    // TODO(burdon): Wrap with class.
     d3.select(groupRef.current)
-      .selectAll<SVGGElement, Kube>('g.kube')
-      .data(objects, (d: Kube) => d.id)
-      .join(
-        enter => enter
-          .append('g')
-          .attr('class', 'kube')
-          .call(renderer.render)
-          // TODO(burdon): Change eslint config for D3.
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          .call(el => el
-            .selectAll('*')
-            .transition()
-            .duration(1000)
-            .attrTween('opacity', () => d3.interpolate(0, 1))),
-        update => update
-          .call(renderer.render),
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        remove => remove
-          .transition()
-          .duration(1000)
-          .attrTween('opacity', () => d3.interpolate(1, 0))
-          .remove()
-      )
-      .call(layout.layout);
+      .call(layout.layout, objects);
   }, [objects]);
 
   return (
@@ -300,12 +334,16 @@ const Container = () => {
 };
 
 export const Primary = () => {
+  const showGrid = false;
+
   return (
     <FullScreen>
       <KnobsProvider>
         <SVGContextProvider>
           <SVG>
-            <Grid axis />
+            {showGrid && (
+              <Grid axis />
+            )}
             <Container />
           </SVG>
         </SVGContextProvider>
