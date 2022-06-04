@@ -4,6 +4,8 @@
 
 import React from 'react';
 
+import { FullScreen } from '@dxos/gem-core';
+
 import { Kube } from '../src';
 
 export default {
@@ -12,13 +14,13 @@ export default {
 
 export const Primary = () => {
   return (
-    <div>
+    <FullScreen>
       <Kube
         config={{
           particleCount: 200,
           maxParticleCount: 300
         }}
       />
-    </div>
+    </FullScreen>
   );
 };

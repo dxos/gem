@@ -4,29 +4,18 @@
 
 ## Usage
 
-NOTE: Requires Node version 12.
-
 ```bash
-yarn
-yarn build
-yarn test
+rush update
+rush build
 ```
-
-## Dependencies.
-
-Run `yarn version-check` to list and fix dependencies across modules.
-React and Mui modules should only be defined in `devDependencies` and `peerDependencies`.
-
 
 ### Publishing to npm
 
-We are using `beta` channel for publishing.
-To publish new versions of all public packages:
-
 ```bash
-yarn build
-yarn test
-yarn lerna publish prerelease --dist-tag="beta" --force-publish
+rush update
+rush version --bump
+rush build
+rush publish --include-all
 ```
 
 ## Related

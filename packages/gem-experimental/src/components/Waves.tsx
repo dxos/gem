@@ -12,7 +12,7 @@ import { THREEx } from '../lib';
 const config = {
   mesh: {
     // https://threejs.org/docs/#api/en/core/Object3D.lookAt
-    orientation: [0.4, 1.2, .5],
+    orientation: [0.4, 1.2, 0.5],
     scale: {
       x: 3.5,
       y: 3,
@@ -39,9 +39,9 @@ const config = {
 };
 
 const styles = css`
-  root: {
-    display: 'flex',
-    flex: 1
+  root {
+    display: flex;
+    flex: 1;
   }
 `;
 
@@ -120,4 +120,3 @@ export const Waves = () => {
 };
 
 export default Waves;
-

@@ -44,8 +44,8 @@ const styles = {
   `
 };
 
-let flockmateRadius = 60;
-let separationDistance = 30;
+const flockmateRadius = 60;
+const separationDistance = 30;
 
 //
 // Utils
@@ -251,7 +251,7 @@ function tick(boids, obstacles, canvas, offscreenCanvas, { width, height }, conf
   boids.forEach(boid => updateBoid(boid, context, { width, height }, config));
 }
 
-function generateObstacles({ width, height }, config) {
+function generateObstacles ({ width, height }, config) {
   const { numObstacles = 0 } = config;
 
   const obstacles = [];
@@ -265,7 +265,7 @@ function generateObstacles({ width, height }, config) {
   return obstacles;
 }
 
-function generateBoids({ width, height }, config) {
+function generateBoids ({ width, height }, config) {
   const { num, startingPosition } = config;
   const boids = initializeFunction[`initialize${startingPosition}`](config, { width, height });
   boids.forEach((b, i) => {
@@ -288,15 +288,15 @@ const Flock = () => {
   // Knobs.
   const num = useNumber('Count', { min: 10, max: 1000, step: 10 }, 100);
   const numObstacles = useNumber('Obstacles', { min: 1, max: 10 }, 5);
-  const startingPosition = useSelect('Start', map(['Random', 'Circle', 'CircleRandom', 'Sine', 'Phyllotaxis']));
-  const coloring = useSelect('Coloring', map(['Movement', 'Grey', 'Rainbow']));
-  const radius = useNumber('Size', { min: 1, max: 20, step: .5 }, 2);
+  const startingPosition = useSelect('Start', map(['Random', 'Circle', 'CircleRandom', 'Sine', 'Phyllotaxis']), 'Random');
+  const coloring = useSelect('Coloring', map(['Movement', 'Grey', 'Rainbow']), 'Movement');
+  const radius = useNumber('Size', { min: 1, max: 20, step: 0.5 }, 2);
   const trail = useNumber('Trail', { min: 0, max: 20 }, 10);
-  const maxVelocity = useNumber('Velocity', { min: 1, max: 5, step: .1 }, 2);
-  const alignment = useNumber('Alignment', { min: 0, max: 10, step: .1 }, 3);
-  const cohesion = useNumber('Cohension', { min: 0, max: 10, step: .1 }, 3);
-  const separation = useNumber('Separation', { min: 0, max: 10, step: .1 }, 3);
-  const avoidance = useNumber('Avoidance', { min: 0, max: 10, step: .1 }, 3);
+  const maxVelocity = useNumber('Velocity', { min: 1, max: 5, step: 0.1 }, 2);
+  const alignment = useNumber('Alignment', { min: 0, max: 10, step: 0.1 }, 3);
+  const cohesion = useNumber('Cohension', { min: 0, max: 10, step: 0.1 }, 3);
+  const separation = useNumber('Separation', { min: 0, max: 10, step: 0.1 }, 3);
+  const avoidance = useNumber('Avoidance', { min: 0, max: 10, step: 0.1 }, 3);
 
   useEffect(() => {
     if (width && height) {
@@ -304,6 +304,7 @@ const Flock = () => {
         numObstacles
       }));
 
+      console.log(':::::::::', startingPosition);
       setBoids(generateBoids({ width, height }, {
         num,
         startingPosition,
