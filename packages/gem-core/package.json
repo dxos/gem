@@ -1,6 +1,6 @@
 {
   "name": "@dxos/gem-core",
-  "version": "2.2.1-beta.11",
+  "version": "2.2.1-beta.13",
   "description": "Gem core components and utils.",
   "homepage": "https://github.com/dxos/gem#readme",
   "bugs": {
@@ -42,8 +42,8 @@
     "assert": "^2.0.0",
     "csstype": "^3.0.10",
     "d3": "^7.2.1",
-    "debug": "^4.1.1",
-    "lodash.defaultsdeep": "4.6.1",
+    "debug": "^4.3.3",
+    "lodash.defaultsdeep": "^4.6.1",
     "use-resize-observer": "^8.0.0"
   },
   "devDependencies": {
@@ -55,7 +55,7 @@
     "@emotion/react": "^11.7.1",
     "@types/d3": "^7.1.0",
     "@types/debug": "^4.1.5",
-    "@types/faker": "^5.1.6",
+    "@types/faker": "^5.5.9",
     "@types/jest": "^27.4.0",
     "@types/lodash": "^4.14.168",
     "eslint": "^7.7.0",
