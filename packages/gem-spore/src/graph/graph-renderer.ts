@@ -247,7 +247,7 @@ export class GraphRenderer<N extends GraphNode> extends Renderer<GraphLayout<N>,
         .join(
           enter => enter.append('g').call(createNode, this.options)
         )
-        .call(updateNode, this.options)
+        .call(updateNode, this.options);
         // .attr('class', d => clsx('node', this.options.classes?.node?.(d)));
   }
 

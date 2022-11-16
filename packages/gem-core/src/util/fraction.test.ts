@@ -40,9 +40,11 @@ test('equals', () => {
   expect(FractionUtil.equals([2, 5], [4, 10])).toBeTruthy();
   expect(FractionUtil.equals([1, 3], [2, 3])).toBeFalsy();
   expect(FractionUtil.equals([0, 1], [1, 1])).toBeFalsy();
-})
+});
 
 test('simplify', () => {
+  expect(FractionUtil.factors(32)).toStrictEqual([1, 2, 4, 8, 16, 32]);
+
   expect(FractionUtil.simplify([0, 1])).toEqual([0, 1]);
   expect(FractionUtil.simplify([3, 2])).toEqual([3, 2]);
   expect(FractionUtil.simplify([8, 2])).toEqual([4, 1]);
@@ -51,6 +53,7 @@ test('simplify', () => {
   expect(FractionUtil.simplify([8, 0.5])).toEqual([16, 1]);
   expect(FractionUtil.simplify([8, 0.2])).toEqual([40, 1]);
   expect(FractionUtil.simplify([6.3, 0.3])).toEqual([21, 1]);
+  expect(FractionUtil.simplify([-32, 16])).toEqual([-2, 1]);
 });
 
 test('add', () => {

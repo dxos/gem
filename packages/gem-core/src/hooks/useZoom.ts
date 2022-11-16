@@ -5,6 +5,7 @@
 import * as d3 from 'd3';
 import type { ZoomTransform } from 'd3';
 import { RefObject, useEffect, useMemo, useRef } from 'react';
+import defaultsdeep from 'lodash.defaultsdeep';
 
 import { SVGContext } from '../context';
 import { useSvgContext } from './useSvgContext';
@@ -14,12 +15,14 @@ export type ZoomExtent = [min: number, max: number];
 export type ZoomOptions = {
   enabled?: boolean
   extent?: ZoomExtent
+  zoom?: number
   onDblClick?: (zoom: ZoomHandler) => void
 }
 
 export const defaultOptions: ZoomOptions = {
   enabled: true,
-  extent: [1/2, 2],
+  extent: [0.5, 2],
+  zoom: 1,
   onDblClick: (zoom: ZoomHandler) => zoom.reset()
 };
 
@@ -27,16 +30,16 @@ export const defaultOptions: ZoomOptions = {
  * Zoom API.
  */
 export class ZoomHandler {
+  private readonly _options: ZoomOptions;
   private readonly _zoom;
   private _enabled: boolean;
-  private readonly _options: ZoomOptions;
 
   constructor (
     private readonly _ref: RefObject<SVGGElement>,
     private readonly _context: SVGContext,
     options: ZoomOptions
   ) {
-    this._options = Object.assign({}, options, defaultOptions);
+    this._options = defaultsdeep({}, options, defaultOptions);
     this._enabled = this._options.enabled ?? true;
 
     // https://github.com/d3/d3-zoom#zoom
@@ -51,12 +54,17 @@ export class ZoomHandler {
     return this._ref;
   }
 
+  get extent () {
+    return this._options.extent;
+  }
+
   get zoom () {
     return this._zoom;
   }
 
   init () {
     this.setEnabled(this._enabled);
+    this.reset();
   }
 
   setEnabled (enable: boolean) {
@@ -64,7 +72,7 @@ export class ZoomHandler {
       d3.select(this._context.svg)
         .call(this._zoom)
         .on('dblclick.zoom',
-          this._options?.onDblClick ?  () => this._options.onDblClick(this) : null);
+          this._options?.onDblClick ? () => this._options.onDblClick(this) : null);
     } else {
       d3.select(this._context.svg)
         .on('.zoom', null); // Unbind the internal event handler.
@@ -78,7 +86,7 @@ export class ZoomHandler {
     d3.select(this._context.svg)
       .transition()
       .duration(duration)
-      .call(this._zoom.transform, d3.zoomIdentity);
+      .call(this._zoom.transform, d3.zoomIdentity.scale(this._options.zoom));
 
     return this;
   }
@@ -102,7 +110,7 @@ export const useZoom = (options: ZoomOptions = defaultOptions): ZoomHandler => {
     });
 
     zoom.init();
-  }, [zoom])
+  }, [zoom]);
 
   return zoom;
 };

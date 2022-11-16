@@ -112,6 +112,7 @@ export class FractionUtil {
   static factors = (n: number): number[] => {
     assert(Number.isFinite(n), `Invalid number: ${n}`);
 
+    n = Math.abs(n);
     const factors = [1];
     if (Number.isSafeInteger(n)) {
       let f = 1;

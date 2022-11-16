@@ -4,6 +4,8 @@
 
 import React from 'react';
 
+import { FullScreen } from '@dxos/gem-core';
+
 import { Waves } from '../src';
 
 export default {
@@ -12,6 +14,8 @@ export default {
 
 export const Primary = () => {
   return (
-    <Waves />
+    <FullScreen>
+      <Waves />
+    </FullScreen>
   );
 };
